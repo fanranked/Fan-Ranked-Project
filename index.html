@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+<script type="module">
+    import { PollAPI } from './js/PollAPI.js';
+    window.pollAPI = new PollAPI();
+
+    var data = await pollAPI.getPoll();
+    let items = data
+    var html = [];
+    html.push(`<form action="" id="pollform">`)
+    html.push("<table border='0' cellpadding='6'>");
+    html.push(`<tr><th align="left" colspan="2">Name</th><th>Team</th><th>Count</th>`)
+    for(let i=0; i< items.length; i++)
+    {
+        let item = items[i];
+        html.push(`<tr><td><input type="radio" name="poll" value="${item.guid}"></td><td>${item.name}</td><td align='center'>${item.team}</td><td align="center">${item.count}</td></tr>`);
+    }
+    html.push("</table>");
+    html.push(`<BR>`)
+    html.push(`<input type="submit" value="Submit">`);
+    html.push(`</form>`)
+    document.getElementById("poll").innerHTML = html.join("")
+
+
+    let results = await pollAPI.getPollResults();
+    var html = [];
+    html.push(`<table border="1">`)
+    html.push(`<tr><th align="left">Name</th><th>Count</th></tr>`);
+    for(let i=0; i< results.length; i++)
+    {
+        let item = results[i];
+        html.push(`<tr><td>${item.name}</td><td align='center'>${item.count}</td></tr>`);
+    }
+    html.push("</table>");
+    document.getElementById("pollresult").innerHTML = html.join("")
+
+
+    const pollForm = document.getElementById("pollform");
+    pollForm.addEventListener("submit", handleFormSubmit);
+    console.log(data)
+
+    async function handleFormSubmit(event) {
+        let test = data;
+        event.preventDefault();
+        const form = event.currentTarget;
+        const url = form.action;
+
+        try
+        {
+            const formData = new FormData(form);
+            const responseData = await postFormDataAsJson({ url, formData });
+            console.log({ responseData });
+            document.location.reload();
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function postFormDataAsJson({ url, formData }) {
+        const plainFormData = Object.fromEntries(formData.entries());
+        var result = await pollAPI.sendPoll(plainFormData);
+    }
+</script>
+</head>
+<body>
+<div id="poll"></div>
+<BR>
+<div id="pollresult"></div>
+</body>
+</html>
